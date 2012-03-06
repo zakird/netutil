@@ -19,9 +19,41 @@ def make_mask(n):
 def make_inverted_mask(n):
     return int(FULL_MASK) >> int(n)
 
-def get_bounds_from_cidr(n):
+def guess_prefix_length(n):
+    if isinstance(n, str):
+        s = n.split('.')
+        if s[0] == '0':
+             return 0
+        elif s[1] == '0':
+             return 8
+        elif s[2] == '0':
+             return 16
+        elif s[3] == '0':
+             return 24
+        else:
+             return 32
+    else:
+        if n % 32 == 0:
+            return 0
+        elif n % 24 == 0:
+            return 8
+        elif n % 16 == 0:
+            return 16
+        elif n % 8 == 0:
+            return 24
+        else:
+            return 32
+
+def get_bounds_from_cidr(n, length=None):
     "returns lowest and highest IP address for a given IP block in CIDR notation (128.255.0.0/24"
-    lower_bound, prefix_length = n.split("/")
+    if "/" in n:
+        lower_bound, prefix_length = n.split("/")
+    elif length:
+        lower_bound = n
+        prefix_length = int(length)
+    else:
+        lower_bound = n
+        prefix_length = guess_prefix_length(n)
     lower_bound_i = str_to_int(lower_bound)
-    upper_bound = lower_bound_i | make_inverted_mask(make_mask(prefix_length))
+    upper_bound = lower_bound_i | make_inverted_mask(prefix_length)
     return (lower_bound_i, upper_bound)
