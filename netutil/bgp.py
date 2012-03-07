@@ -23,7 +23,6 @@ class BGPRecord(object):
     begin_address_str = property(__get_begin_address_str)
 
     def __get_end_address(self):
-        print ip4.get_bounds_from_cidr(self.prefix, self.prefix_length)
         return ip4.get_bounds_from_cidr(self.prefix, self.prefix_length)[1]
     end_address = property(__get_end_address)
 
@@ -31,6 +30,9 @@ class BGPRecord(object):
         return ip4.int_to_str(self.end_address)
     end_address_str = property(__get_end_address_str)
 
+    def __get_network(self):
+        return "/".join((self.prefix, str(self.prefix_length)))
+    network = property(__get_network)
 
 class BGPDump(object):
     re_bgp_record = re.compile("^\*>i((?:\d{1,3}\.){3}\d{1,3})(?:/(\d{1,2}))?\s+((?:\d{1,3}\.){3}\d{1,3})\s+(\d+)\s+(\d{3})?\s{2,6}(\d{1,5}) ((?:\d{1,6} )*)((?:i|\?)*)")
@@ -64,7 +66,6 @@ class BGPDump(object):
         with open(self.__path) as fd:
             prev = None
             for r in fd:
-                print r.rstrip()
                 if r.startswith('*>') or prev:
                     if self.re_bgp_split.match(r):
                         prev = r
@@ -95,5 +96,12 @@ class CIDRReportASNameDump(object):
         for line in self.__f.readlines():
             m = self.ENTRY_REGEX.match(line)
             if m:
-                yield (m.groups[1], m.groups[2])
-
+                asn = m.groups()[0].rstrip().lstrip().replace('AS','')
+                # handle weird . notation for > 16-bit ASNs
+                if '.' in asn:
+                    b, s = asn.split('.')
+                    asn = (int(b) << 16) + int(s)
+                else:
+                    asn = int(asn)
+                name = m.groups()[1].rstrip().lstrip()
+                yield (asn, name)
