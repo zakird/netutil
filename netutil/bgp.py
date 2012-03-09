@@ -34,6 +34,7 @@ class BGPRecord(object):
         return "/".join((self.prefix, str(self.prefix_length)))
     network = property(__get_network)
 
+
 class BGPDump(object):
     re_bgp_record = re.compile("^\*>i((?:\d{1,3}\.){3}\d{1,3})(?:/(\d{1,2}))?\s+((?:\d{1,3}\.){3}\d{1,3})\s+(\d+)\s+(\d{3})?\s{2,6}(\d{1,5}) ((?:\d{1,6} )*)((?:i|\?)*)")
     re_bgp_split = re.compile("^\*>i((?:\d{1,3}\.){3}\d{1,3})(/\d{1,2})?\s*$")
@@ -75,33 +76,3 @@ class BGPDump(object):
                         prev = None
                     yield self.__gen_bgpobj(self.re_bgp_record.match(r))
 
-
-class CIDRReportASNameDump(object):
-    """ASNNameDump represents the full list of
-    registered AS Numbers on CIDR report. Acts as an iterator that
-    will provide tuples: (AS Number, AS Name)"""
-
-    CIDR_REPORT_URL = "http://www.cidr-report.org/as2.0/autnums.html"
-    ENTRY_REGEX = re.compile("^<a href.*>(.*)</a>(.*)$")
-
-    def __init__(self):
-        self.__f = None
-
-    def fetch(self):
-        if not self.__f:
-            self.__f = urllib2.urlopen(self.CIDR_REPORT_URL)
-
-    def __iter__(self):
-        self.fetch()
-        for line in self.__f.readlines():
-            m = self.ENTRY_REGEX.match(line)
-            if m:
-                asn = m.groups()[0].rstrip().lstrip().replace('AS','')
-                # handle weird . notation for > 16-bit ASNs
-                if '.' in asn:
-                    b, s = asn.split('.')
-                    asn = (int(b) << 16) + int(s)
-                else:
-                    asn = int(asn)
-                name = m.groups()[1].rstrip().lstrip()
-                yield (asn, name)
