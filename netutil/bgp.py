@@ -23,13 +23,16 @@ class BGPRecord(object):
     begin_address_str = property(__get_begin_address_str)
 
     def __get_end_address(self):
-        print ip4.get_bounds_from_cidr(self.prefix, self.prefix_length)
         return ip4.get_bounds_from_cidr(self.prefix, self.prefix_length)[1]
     end_address = property(__get_end_address)
 
     def __get_end_address_str(self):
         return ip4.int_to_str(self.end_address)
     end_address_str = property(__get_end_address_str)
+
+    def __get_network(self):
+        return "/".join((self.prefix, str(self.prefix_length)))
+    network = property(__get_network)
 
 
 class BGPDump(object):
@@ -64,7 +67,6 @@ class BGPDump(object):
         with open(self.__path) as fd:
             prev = None
             for r in fd:
-                print r.rstrip()
                 if r.startswith('*>') or prev:
                     if self.re_bgp_split.match(r):
                         prev = r
@@ -73,27 +75,4 @@ class BGPDump(object):
                         r = prev.rstrip() + ' ' + r
                         prev = None
                     yield self.__gen_bgpobj(self.re_bgp_record.match(r))
-
-
-class CIDRReportASNameDump(object):
-    """ASNNameDump represents the full list of
-    registered AS Numbers on CIDR report. Acts as an iterator that
-    will provide tuples: (AS Number, AS Name)"""
-
-    CIDR_REPORT_URL = "http://www.cidr-report.org/as2.0/autnums.html"
-    ENTRY_REGEX = re.compile("^<a href.*>(.*)</a>(.*)$")
-
-    def __init__(self):
-        self.__f = None
-
-    def fetch(self):
-        if not self.__f:
-            self.__f = urllib2.urlopen(self.CIDR_REPORT_URL)
-
-    def __iter__(self):
-        self.fetch()
-        for line in self.__f.readlines():
-            m = self.ENTRY_REGEX.match(line)
-            if m:
-                yield (m.groups[1], m.groups[2])
 
