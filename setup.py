@@ -7,7 +7,7 @@ def read(fname):
 
 setup(
     name = "netutil",
-    version = "0.1.0",
+    version = "0.2.0",
     author = "Zakir Durumeric",
     author_email = "zakird@gmail.com",
     maintainer = "Zakir Durumeric",
