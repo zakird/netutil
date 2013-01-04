@@ -1,2 +1,2 @@
-__all__ = ['ipv4', 'bgp','asnames', 'sshhostkeycheck','cymru']
+__all__ = ['ipv4', 'bgp','asnames', 'sshhostkeycheck','cymru', 'alexa']
 
