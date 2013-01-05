@@ -5,10 +5,10 @@ import csv
 import zipfile
 import urllib
 
-class AlexTopOneMillion(object):
-    """Alex Top 1 million websites fetcher/parser/iterator.
+class AlexaTopOneMillion(object):
+    """Alexa Top 1 million websites fetcher/parser/iterator.
 	e.g. usage:
-		a = AlexTopOneMillion()
+		a = AlexaTopOneMillion()
 		for rating, website in a:
 			print rating, website"""
 
@@ -54,7 +54,7 @@ class AlexTopOneMillion(object):
 
 
 def main():
-    a = AlexTopOneMillion()
+    a = AlexaTopOneMillion()
     for r in a:
         print r
 
